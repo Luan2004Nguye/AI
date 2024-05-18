@@ -236,6 +236,17 @@ buttons_and_notification_layout.styles = {'background-color': '#1E5938','border'
 
 # Arrange plots and widgets in layouts
 grid_layout = gridplot([[row(buttons_and_notification_layout, p)]], toolbar_location=None, sizing_mode='scale_width', merge_tools=False)
-curdoc().add_root(grid_layout)
-curdoc().title = "Connect Four with Bokeh"
-server = ConnectFour.server
+from bokeh.application import Application
+from bokeh.application.handlers import FunctionHandler
+
+def modify_doc(doc):
+    # Your Bokeh document modification code here
+    curdoc().add_root(grid_layout)
+    curdoc().title = "Connect Four with Bokeh"
+
+handler = FunctionHandler(modify_doc)
+application = Application(handler)
+
+# If using gunicorn
+server = application.create()
+
