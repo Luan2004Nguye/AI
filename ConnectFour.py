@@ -236,17 +236,95 @@ buttons_and_notification_layout.styles = {'background-color': '#1E5938','border'
 
 # Arrange plots and widgets in layouts
 grid_layout = gridplot([[row(buttons_and_notification_layout, p)]], toolbar_location=None, sizing_mode='scale_width', merge_tools=False)
-from bokeh.application import Application
-from bokeh.application.handlers import FunctionHandler
-
 def modify_doc(doc):
-    # Your Bokeh document modification code here
-    curdoc().add_root(grid_layout)
-    curdoc().title = "Connect Four with Bokeh"
+    # Your function to modify the Bokeh document
+    p = figure(x_range=(-0.5, width+0.5), y_range=(-0.5, height+0.5), 
+               width=700, height=600, tools="", toolbar_location=None, styles={'transform': 'translate(50px, 10px)', 'border': '1px solid black', 'background-color': '#8B4513'})
+    p.grid.visible = False
+    p.axis.visible = False
+    p.background_fill_color = "#2C7B4A"
 
-handler = FunctionHandler(modify_doc)
-application = Application(handler)
+    circles = ColumnDataSource(data=dict(x=[], y=[], color=[]))
 
-# If using gunicorn
-server = application.create()
+    # Initial Drawing of Circles
+    for row in range(height):
+        for col in range(width):
+            circles.data['x'].append(col + 0.5)
+            circles.data['y'].append(row + 0.5)
+            circles.data['color'].append(colors[0])
+
+    p.scatter('x', 'y', source=circles, size=50, color='color', line_color="black")
+
+    notification_div = Div(text="Welcome to Connect Four!", width=200, height=100)
+    notification_div.styles = {'background-color': '#95BFB0', 'border': '1px solid black', 'color': 'white', 'text-align': 'center', 'font-size': '20px'}
+
+    # GameController and other class definitions go here...
+
+    def start_game():
+        global game_started, game, board
+        game_started = True
+        start_button.visible = False
+        p.visible = True
+        game = GameController([human_player, AI_Player(algo_neg)])
+        board = game.board
+        update_board()
+        notification_div.text = "Game started! Your turn!"
+
+    # Add a button to start the game
+    start_button = Button(label="Start Game", width=200, height=50, button_type="success")
+    start_button.on_click(start_game)
+
+    # Add a reset button
+    reset_button = Button(label="Reset", width=150, height=50, button_type="primary", styles={'transform': 'translate(25px, 0px)'})
+    def reset_game():
+        global game, board
+        game.reset([human_player, AI_Player(algo_neg)])
+        board = game.board
+        update_board()
+        notification_div.text = "Welcome to Connect Four!"
+
+    reset_button.on_click(reset_game)
+
+    # Difficulty options
+    difficulty_select = Select(title="Difficulty", options=["Easy", "Medium", "Hard"], value="Medium", styles={'color': 'white', 'font-size': '15px'})
+
+    def update_difficulty(attr, old, new):
+        if new == "Easy":
+            algo_neg.depth = 3
+        elif new == "Medium":
+            algo_neg.depth = 5
+        elif new == "Hard":
+            algo_neg.depth = 7
+
+    difficulty_select.on_change('value', update_difficulty)
+
+    # Arrange plots and widgets in layouts
+    buttons_column = bokeh_column(image_div, start_button, reset_button, difficulty_select, notification_div, sizing_mode='scale_width')
+
+    # Create a column layout for buttons and notification_div
+    buttons_and_notification_layout = bokeh_column(image_div, title_div, start_button, reset_button, difficulty_select, notification_div)
+    buttons_and_notification_layout.styles = {'background-color': '#1E5938', 'border': '1px solid black', 'transform': 'translate(20px, 20px)'}
+
+    # Arrange plots and widgets in layouts
+    grid_layout = gridplot([[bokeh_row(buttons_and_notification_layout, p)]], toolbar_location=None, sizing_mode='scale_width', merge_tools=False)
+    doc.add_root(grid_layout)
+    doc.title = "Connect Four with Bokeh"
+
+# Create a Bokeh application
+app = Application(FunctionHandler(modify_doc))
+
+# For Gunicorn to serve
+server = app.create_document()
+
+def bkapp(doc):
+    modify_doc(doc)
+
+# Serve the application
+from bokeh.server.server import Server
+server = Server({'/': bkapp}, num_procs=1)
+
+if __name__ == '__main__':
+    server.start()
+    server.io_loop.add_callback(server.show, "/")
+    server.io_loop.start()
 
