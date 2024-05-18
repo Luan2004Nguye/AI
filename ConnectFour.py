@@ -1,15 +1,16 @@
-import numpy as np
 from bokeh.io import curdoc
 from bokeh.models import ColumnDataSource, Button, Div, Select
-from bokeh.layouts import column as bokeh_column, row as bokeh_row
-
 from bokeh.plotting import figure
+from bokeh.layouts import column as bokeh_column, row as bokeh_row, gridplot
+from bokeh.application import Application
+from bokeh.application.handlers import FunctionHandler
+import numpy as np
+import time
 from easyAI import Negamax
 from TwoPlayers import TwoPlayerGame
 from Players import AI_Player, Human_Player
-from bokeh.driving import linear
 from functools import partial
-import time
+
 
 # Constants
 width = 7
