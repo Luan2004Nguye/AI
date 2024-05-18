@@ -238,4 +238,4 @@ buttons_and_notification_layout.styles = {'background-color': '#1E5938','border'
 grid_layout = gridplot([[row(buttons_and_notification_layout, p)]], toolbar_location=None, sizing_mode='scale_width', merge_tools=False)
 curdoc().add_root(grid_layout)
 curdoc().title = "Connect Four with Bokeh"
-server = app.server
+server = curdoc().add_root(grid_layout).server
