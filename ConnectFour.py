@@ -10,7 +10,7 @@ from Players import AI_Player, Human_Player
 from bokeh.driving import linear
 from functools import partial
 import time
-
+server = app.server
 # Constants
 width = 7
 height = 6
