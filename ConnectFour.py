@@ -10,7 +10,7 @@ from Players import AI_Player, Human_Player
 from bokeh.driving import linear
 from functools import partial
 import time
-server = app.server
+
 # Constants
 width = 7
 height = 6
@@ -238,3 +238,4 @@ buttons_and_notification_layout.styles = {'background-color': '#1E5938','border'
 grid_layout = gridplot([[row(buttons_and_notification_layout, p)]], toolbar_location=None, sizing_mode='scale_width', merge_tools=False)
 curdoc().add_root(grid_layout)
 curdoc().title = "Connect Four with Bokeh"
+server = app.server
