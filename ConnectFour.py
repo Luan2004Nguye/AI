@@ -239,8 +239,8 @@ buttons_and_notification_layout.styles = {'background-color': '#1E5938','border'
 grid_layout = gridplot([[row(buttons_and_notification_layout, p)]], toolbar_location=None, sizing_mode='scale_width', merge_tools=False)
 def modify_doc(doc):
     # Your function to modify the Bokeh document
-    p = figure(x_range=(-0.5, width+0.5), y_range=(-0.5, height+0.5), 
-               width=700, height=600, tools="", toolbar_location=None, styles={'transform': 'translate(50px, 10px)', 'border': '1px solid black', 'background-color': '#8B4513'})
+    p = figure(x_range=(-0.5, width + 0.5), y_range=(-0.5, height + 0.5), 
+               width=700, height=600, tools="", toolbar_location=None)
     p.grid.visible = False
     p.axis.visible = False
     p.background_fill_color = "#2C7B4A"
@@ -276,7 +276,7 @@ def modify_doc(doc):
     start_button.on_click(start_game)
 
     # Add a reset button
-    reset_button = Button(label="Reset", width=150, height=50, button_type="primary", styles={'transform': 'translate(25px, 0px)'})
+    reset_button = Button(label="Reset", width=150, height=50, button_type="primary")
     def reset_game():
         global game, board
         game.reset([human_player, AI_Player(algo_neg)])
@@ -287,7 +287,7 @@ def modify_doc(doc):
     reset_button.on_click(reset_game)
 
     # Difficulty options
-    difficulty_select = Select(title="Difficulty", options=["Easy", "Medium", "Hard"], value="Medium", styles={'color': 'white', 'font-size': '15px'})
+    difficulty_select = Select(title="Difficulty", options=["Easy", "Medium", "Hard"], value="Medium")
 
     def update_difficulty(attr, old, new):
         if new == "Easy":
@@ -300,32 +300,24 @@ def modify_doc(doc):
     difficulty_select.on_change('value', update_difficulty)
 
     # Arrange plots and widgets in layouts
-    buttons_column = bokeh_column(image_div, start_button, reset_button, difficulty_select, notification_div, sizing_mode='scale_width')
+    buttons_column = bokeh_column(start_button, reset_button, difficulty_select, notification_div)
 
     # Create a column layout for buttons and notification_div
-    buttons_and_notification_layout = bokeh_column(image_div, title_div, start_button, reset_button, difficulty_select, notification_div)
-    buttons_and_notification_layout.styles = {'background-color': '#1E5938', 'border': '1px solid black', 'transform': 'translate(20px, 20px)'}
+    buttons_and_notification_layout = bokeh_column(start_button, reset_button, difficulty_select, notification_div)
 
     # Arrange plots and widgets in layouts
     grid_layout = gridplot([[bokeh_row(buttons_and_notification_layout, p)]], toolbar_location=None, sizing_mode='scale_width', merge_tools=False)
     doc.add_root(grid_layout)
     doc.title = "Connect Four with Bokeh"
 
-# Create a Bokeh application
-app = Application(FunctionHandler(modify_doc))
-
-# For Gunicorn to serve
-server = app.create_document()
-
+# Serve the application
 def bkapp(doc):
     modify_doc(doc)
 
-# Serve the application
-from bokeh.server.server import Server
-server = Server({'/': bkapp}, num_procs=1)
+# This line is necessary for Bokeh to serve the app
+server = Server({'/': bkapp}, io_loop=IOLoop.current())
 
 if __name__ == '__main__':
     server.start()
     server.io_loop.add_callback(server.show, "/")
     server.io_loop.start()
-
